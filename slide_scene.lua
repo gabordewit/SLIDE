@@ -20,7 +20,7 @@ ToDo
 --set environment variables that can be used to switch logger on/off.
 debug = true
 dryrun = true
-testIndividualSlide = true
+testIndividualSlide = false
 slideIdToTest = 1867
 slideCommandToTest = "close"
 
@@ -54,7 +54,7 @@ slides = {}
 --[[ In orde to use the SLIDE api, a user needs to be authenticated with the platform. The data used needs to be provisioned
 above. 
       --]]
-function getToken()
+function getToken(refreshHousehold)
     debuglogger("Calling getToken function for access")
     -- setup variables to include in the call - include json encoding
     local requestStr = {email = userName, password = password}
@@ -93,16 +93,21 @@ function getToken()
                 if dryrun == false then
                     fibaro:setGlobal("Slidetoken", json.encode(authData))
                 else
-                    debuglogger("Performing dry-run, not storing tokense")
+                    debuglogger("Performing dry-run, not storing tokens")
                 end
-                debuglogger("Token needed for upcoming request: " .. decodedGlobal.access_token)
+                debuglogger("Token needed for upcoming request: " .. authData.access_token)
                 -- Loop over new values, evaluate if they are stored correctly
                 for tokenKey, value in pairs(authData) do
                     debuglogger("Authdata key: " .. tokenKey .. ", stored value: " .. value)
                 end
                 -- to speed up onboarding in Fibaro we're also getting household information already.
                 -- SLIDES will be provisioned in the virtual device so set that up first
-                getHouseholdInfo()
+                if refreshHousehold then
+                    debuglogger("Refresh of household triggered")
+                    getHouseholdInfo()
+                else
+                    debuglogger("Not refreshing household")
+                end
             end,
             error = function(err)
                 -- response = json.decode(err)
@@ -113,14 +118,18 @@ function getToken()
 end
 
 -- decoded global value for slidetoken
-if dryrun then 
+if dryrun then
     fibaro:debug("Not requesting global variable due to dryrun")
     decodedGlobal = authData
-else decodedGlobal = json.decode(fibaro:getGlobalValue("Slidetoken"))
+elseif dryrun == false and fibaro:getGlobalValue("Slidetoken") ~= nil then
+    decodedGlobal = json.decode(fibaro:getGlobalValue("Slidetoken"))
+else
+    fibaro:debug("Warning, no global value set yet for Slidetoken")
 end
 
 --[[ This is one of the most important API's, as this API will allow you to set the technical id's of the  slides to use
-in other API's. The data is store in a global variable.
+in other API's. The data is store in a global variable. The auth data is used here instead of the global value since 
+this will improve latency and prevent race conditions.
       --]]
 function getHouseholdInfo()
     debuglogger("Calling householdinfo for household paramters")
@@ -129,7 +138,7 @@ function getHouseholdInfo()
     local headers = {
         ["content-type"] = "application/json",
         ["X-Requested-With"] = "XMLHttpRequest",
-        ["Authorization"] = "Bearer " .. decodedGlobal.access_token
+        ["Authorization"] = "Bearer " .. authData.access_token
     }
     local url = slideApiUrl .. endPoint
     debuglogger(url)
@@ -145,7 +154,10 @@ function getHouseholdInfo()
                 decodedHouseholdResponse = json.decode(resp.data)
 
                 for slideCount = 1, #decodedHouseholdResponse.slides do
-                    debuglogger("Looping over slides in household, loop sequence: " .. slideCount .. " ID found: " .. decodedHouseholdResponse.slides[slideCount].id)
+                    debuglogger(
+                        "Looping over slides in household, loop sequence: " ..
+                            slideCount .. " ID found: " .. decodedHouseholdResponse.slides[slideCount].id
+                    )
 
                     dataInHousehold = {
                         ["id"] = decodedHouseholdResponse.slides[slideCount].id,
@@ -259,9 +271,6 @@ function getSlideInfo(slideId)
             success = function(resp)
                 debuglogger("Success on slide call: " .. resp.data)
                 decodedSlideResponse = json.decode(resp.data)
-                -- if slideId == 1867 then
-                -- setSlide(slideId, "close")
-                -- end
             end,
             error = function(err)
                 -- response = json.decode(err)
@@ -275,27 +284,35 @@ end
 call a scene with input parameters, the scene van be triggered from virtual devices.
       --]]
 args = fibaro:args()
-if args ~= nil and args[1] == "requestNewToken" then
+if dryrun then
+    refreshHousehold = true
+    getToken(refreshHousehold)
+elseif args == nil then
+    print("No commands or dry run request received")
+elseif args ~= nil and args[1] == "requestNewToken" then
     request = args[1]
-    print("request " .. request)
-    getToken()
+    refreshHousehold = args[2]
+    print("Request " .. request)
+    getToken(refreshHousehold)
 elseif args ~= nil and args[1] == "controlSlide" then
     request = args[1]
     slideToCommand = args[2]
     slideCommand = args[3]
-    print("request " .. request)
+    print("Request " .. request)
     debuglogger("slideToCommand " .. slideToCommand)
     debuglogger("slideCommand " .. slideCommand)
     -- Check for existence of a token to be able to make calls
     if (decodedGlobal.access_token ~= "" and os.date("%Y-%m-%d %X") < decodedGlobal.expires_at) then
-        --setSlide(slideToCommand, slideCommand)
+        setSlide(slideToCommand, slideCommand)
         print("Token found and not expired, expiry date: " .. authData.expires_at)
     else
-        -- getToken()
         print("No valid token found (not present or expired), triggering function to retrieve a new token")
+        print("The action you've intended to execute might have failed, please try again after token refresh")
+        refreshHousehold = true
+        getToken(refreshHousehold)
     end
-elseif dryrun then
-    getToken()
 else
-    print("no commands or dry run request received")
+    print("Unknown error occurred, please check config syntax")
 end
+
+
