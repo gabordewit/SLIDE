@@ -15,7 +15,7 @@ The basic features supported are:
 - opening/closing your slide
 
 ## Instructions
-To get your Fibaro skill up and running head over to the scene section and create yourself  a new scene. Name your scene and use a notepad to list the scene ID. Next head over to the parts of the code that you need to adjust to suit your situation:
+To get your Fibaro skill up and running head over to the scene section and create yourself  a new scene. Name your scene and use a notepad to list the scene ID. Copy past the code that is listed under slide_scene.lua in the advanced section. Next head over to the parts of the code that you need to adjust to suit your situation and your credentials.:
 
 ```
 -- set userdata for SLIDE api including URL.
@@ -30,6 +30,8 @@ The following variables need to be created to comply to the scene's storing synt
 - Slides
 - Slidehousehold
 - Slidescene
+
+The first three ones will be empty at the start and filled by the Fibaro skill, the fourth one you need to set with your fibaro scene id (in which you past the lua code) so the virtual device can dynamically retrieve which scene to call.
 
 ## Dry runs and debug
 Within the scene there are options for debugging and performing a dry run to see if your credential are okay and if I've done a proper job of creating a working scene. Head over to the following section to tweak these settings:
