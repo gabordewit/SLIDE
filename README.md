@@ -19,8 +19,8 @@ To get your Fibaro skill up and running head over to the scene section and creat
 
 ```
 -- set userdata for SLIDE api including URL.
-userName = **"INSERT YOUR OWN EMAIL HERE - YES THE QUOTES NEED TO STAY BEFORE AND AFTER"**
-password = **"INSERT YOUR OWN PASSWORD HERE - YES THE QUOTES NEED TO STAY BEFORE AND AFTER"**
+userName = "INSERT YOUR OWN EMAIL HERE - YES THE QUOTES NEED TO STAY BEFORE AND AFTER"
+password = "INSERT YOUR OWN PASSWORD HERE - YES THE QUOTES NEED TO STAY BEFORE AND AFTER"
 slideApiUrl = "https://api.goslide.io/api"
 ```
 When the userdata has been set and you want to  get going, head over to devices and import the example VFIB file to get the basics behind the way in which the virtual device calls the scene and how the device itself is dynamically provisioned. For this to work it's important to do a dry run on the scene (instructions below) and to create four global variables in the panel section of Fibaro. Just create blank ones for the first three - they will be filled by the scene- but insert the scene id for the newly create code in the variable for slidescene.
@@ -62,4 +62,4 @@ Take the following steps to get you going:
 
 This means you can  import the VFIB and adjust the amount of slides to the slides you have in your house. If you have three devices associated to your home, create three slide labels + open/close buttons. As the example includes two slides validate the syntax they are using to see if you can simply copy one example to the new device (typically this would be a yes). In general the initialization button will loop through all of the slides the SLIDE API will return and create associated labels in the virtual devices so you can actually recognize your slides by their respective friendly names. The global variable in which the Slidescene is referred to will ensure the right api's are called.
 
-** set the dryrun to false in the scene to ensure that the initialization can take place**
+**set the dryrun to false in the scene to ensure that the initialization can take place**
