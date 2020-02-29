@@ -51,6 +51,7 @@ Create four global variables:
 - Slidescene
 
 Take the following steps to get you going:
+- insert the scene id of the slide api into the variable Slidescene in the fibaro panel section;
 - import vfib in the virtual device section
 - adjust the amount of slides to the amount you actually have connected and registered to the cloud api of slide
 - set the dryrun (see above) to false to ensure the scene actually stores information 
