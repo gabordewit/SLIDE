@@ -49,7 +49,17 @@ authData = {
 numberOfSlides = 0
 
 -- set global householdata variable for storing slide information, including example data model
-slides = {}
+slides = {
+    --]]
+    ["id"],
+    {
+        ["id"] = decodedHouseholdResponse.slides[slideCount].id,
+        ["device_name"] = decodedHouseholdResponse.slides[slideCount].device_name,
+        ["device_id"] = decodedHouseholdResponse.slides[slideCount].device_id,
+        ["zone_id"] = decodedHouseholdResponse.slides[slideCount].zone_id
+    }
+    --]]
+}
 
 --[[ In orde to use the SLIDE api, a user needs to be authenticated with the platform. The data used needs to be provisioned
 above. 
