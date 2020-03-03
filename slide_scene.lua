@@ -34,10 +34,11 @@ end
 -- set userdata for SLIDE api including URL and include sceneID.
 userName = ""
 password = ""
-fibaroSceneId = 48
 slideApiUrl = "https://api.goslide.io/api"
 
--- set global userdata variable for storing tokens. for dryrun purposes it's possible to take the output and store here.
+--[[ set global userdata variable for storing tokens. for dryrun purposes it's possible to take the output and store here.
+Includes refresh_token that is currently not used yet.
+--]]
 authData = {
     ["access_token"] = "",
     ["token_type"] = "Bearer",
@@ -47,14 +48,10 @@ authData = {
     ["household_id"] = "15"
 }
 
--- global variable to set amount of slides
-numberOfSlides = 0
-
---[[ set global householdata variable for storing slide information, including example data model
+--[[ set global slides variable for storing slide information, including example data model
 --]]
-slides = {}
-
-slideHouseholdInfo = {
+slides = {
+    --[[
     ["slide1"] = {
         ["id"] = "1234",
         ["device_name"] = "superslide",
@@ -75,20 +72,10 @@ slideHouseholdInfo = {
             ["pos"] = 0.09
         }
     },
-    ["token"] = {
-        ["access_token"] = "",
-        ["token_type"] = "Bearer",
-        ["expires_at"] = "2020-03-10 09:48:38",
-        ["expires_in"] = "2592000",
-        ["refresh_token"] = "",
-        ["household_id"] = "15"
-    },
     ["slidesInHousehold"] = 2,
-    ["slideSceneID"] = fibaroSceneId
+    --]]
 }
 
---[[ set global householdata variable for storing slide information, including example data model
---]]
 --[[ In orde to use the SLIDE api, a user needs to be authenticated with the platform. The data used needs to be provisioned
 above. 
       --]]
@@ -121,17 +108,27 @@ function getToken(refreshHousehold)
                 decodedTokenResponse = json.decode(resp.data)
 
                 -- Store retrieved JSON response in a map
-                slideHouseholdInfo.token.access_token = decodedTokenResponse.access_token
-                slideHouseholdInfo.token.token_type = decodedTokenResponse.token_type
-                slideHouseholdInfo.token.expires_at = decodedTokenResponse.expires_at
-                slideHouseholdInfo.token.expires_in = decodedTokenResponse.expires_in
-                slideHouseholdInfo.token.household_id = decodedTokenResponse.household_id
+                authData.access_token = decodedTokenResponse.access_token
+                authData.token_type = decodedTokenResponse.token_type
+                authData.expires_at = decodedTokenResponse.expires_at
+                authData.expires_in = decodedTokenResponse.expires_in
+                authData.household_id = decodedTokenResponse.household_id
 
-                debuglogger("Token needed for upcoming request: " .. slideHouseholdInfo.token.access_token)
+                -- store json value in global token (if this is not a dryrun)
+                -- set a small timer to ensure the data is properly stored and propagated
+                if dryrun == false then
+                    fibaro:setGlobal("Slidetoken", json.encode(authData))
+                    fibaro:sleep(500)
+                else
+                    debuglogger("Performing dry-run, not storing tokens")
+                end
+
+                debuglogger("Token needed for upcoming request: " .. authData.access_token)
                 -- Loop over new values, evaluate if they are stored correctly
-                for tokenKey, value in pairs(slideHouseholdInfo.token) do
+                for tokenKey, value in pairs(authData) do
                     debuglogger("Authdata key: " .. tokenKey .. ", stored value: " .. value)
                 end
+
                 -- to speed up onboarding in Fibaro we're also getting household information already.
                 -- SLIDES will be provisioned in the virtual device so set that up first
                 if refreshHousehold then
@@ -152,12 +149,11 @@ end
 -- decoded global value for slidetoken
 if dryrun then
     fibaro:debug("Not requesting global variable due to dryrun")
-    decodedGlobal = slideHouseholdInfo.token
-elseif dryrun == false and fibaro:getGlobalValue("Slidehouseholdinfo") ~= nil then
-    retrieveHouseholdFromGlobal = json.decode(fibaro:getGlobalValue("Slidehouseholdinfo"))
-    decodedGlobal = retrieveHouseholdFromGlobal.token
+    decodedGlobalToken = authData
+elseif dryrun == false and fibaro:getGlobalValue("Slidetoken") ~= nil then
+    decodedGlobalToken = json.decode(fibaro:getGlobalValue("Slidetoken"))
 else
-    fibaro:debug("Warning, no global value set yet for Slidehouseholdinfo")
+    fibaro:debug("Warning, no global value set yet for Slidetoken")
 end
 
 --[[ This is one of the most important API's, as this API will allow you to set the technical id's of the  slides to use
@@ -171,7 +167,7 @@ function getHouseholdInfo()
     local headers = {
         ["content-type"] = "application/json",
         ["X-Requested-With"] = "XMLHttpRequest",
-        ["Authorization"] = "Bearer " .. slideHouseholdInfo.token.access_token
+        ["Authorization"] = "Bearer " .. decodedGlobalToken.access_token
     }
     local url = slideApiUrl .. endPoint
     debuglogger(url)
@@ -188,7 +184,7 @@ function getHouseholdInfo()
 
                 for slideCount = 1, #decodedHouseholdResponse.slides do
                     debuglogger(
-                        "Looping over slides in household, loop sequence: " ..
+                        "Looping over slides in api response, loop sequence: " ..
                             slideCount .. " ID found: " .. decodedHouseholdResponse.slides[slideCount].id
                     )
 
@@ -201,45 +197,29 @@ function getHouseholdInfo()
                         ["device_info"] = decodedHouseholdResponse.slides[slideCount].device_info
                     }
 
-                    -- setcounter on slide identifier
+                    -- fill the datastore with relevant data, this includes individual slides and total number of slides.
                     slideNumberID = "slide" .. slideCount
-                    numberOfSlides = slideCount
-                    slideHouseholdInfo["slidesInHousehold"] = numberOfSlides
-
-                    -- merge the slide data to it's own ID
+                    slides["slidesInHousehold"] = slideCount
                     slides[slideNumberID] = dataInHousehold
-                    slideHouseholdInfo[slideNumberID] = dataInHousehold
                 end
 
-                -- store json values in global token, thhis needs to be set  before using these api's otherwise
-                -- data is not available.
+                --[[ store json values in global token, this needs to be set  before using these api's otherwise
+                data is not available.--]]
                 if dryrun == false then
                     -- store slide data in a global variable - needs to be created first
-                    fibaro:setGlobal("Slidehouseholdinfo", slideHouseholdInfo)
+                    fibaro:setGlobal("Slides", json.encode(slides))
                 elseif dryrun and testIndividualSlide then
                     debuglogger("Testing individual slide  in dryrun mode: " .. slideIdToTest)
                     setSlide(slideIdToTest, slideCommandToTest)
                 else
                     debuglogger("Performing dry-run, not storing tokens or setting slides")
                 end
-                
+
                 --[[ list the amount of slides in the house and list the individual slides --]]
                 debuglogger("Number of slides in household: " .. numberOfSlides)
-                for slideData, value in pairs(slideHouseholdInfo) do
+                for slideData, value in pairs(slides) do
                     debuglogger("Data to be stored in memory: " .. slideData)
-          			debuglogger(value)
-                    if slideData == "device_info" then 
-                        for k, v in pairs(slideData) do
-                            debuglogger("Device info: " .. slideData)
-                            debuglogger(value)
-                        end
-                    end
-                end
-        		-- validate number of slides.
-        		numberOfSlidesToCheck = slideHouseholdInfo["slidesInHousehold"]
-                for i = 1, slideHouseholdInfo["slidesInHousehold"] do
-                    slideToCheck = "slide" .. i
-                    debuglogger("Slide ID to be stored in memory: " .. slideHouseholdInfo[slideToCheck].id)
+                    debuglogger(value)
                 end
             end,
             error = function(err)
@@ -271,7 +251,7 @@ function setSlide(slideId, command)
     local headers = {
         ["content-type"] = "application/json",
         ["X-Requested-With"] = "XMLHttpRequest",
-        ["Authorization"] = "Bearer " .. decodedGlobal.access_token
+        ["Authorization"] = "Bearer " .. decodedGlobalToken.access_token
     }
     local url = slideApiUrl .. endPoint
     debuglogger(url)
@@ -305,7 +285,7 @@ function getSlideInfo(slideId)
     local headers = {
         ["content-type"] = "application/json",
         ["X-Requested-With"] = "XMLHttpRequest",
-        ["Authorization"] = "Bearer " .. decodedGlobal.access_token
+        ["Authorization"] = "Bearer " .. decodedGlobalToken.access_token
     }
     local url = slideApiUrl .. endPoint
     debuglogger(url)
@@ -333,33 +313,46 @@ call a scene with input parameters, the scene van be triggered from virtual devi
       --]]
 args = fibaro:args()
 if dryrun then
+    fibaro:debug("Request for dry run received")
     refreshHousehold = true
     getToken(refreshHousehold)
 elseif args == nil then
-    print("No commands or dry run request received")
+    fibaro:debug("No commands or dry run request received")
 elseif args ~= nil and args[1] == "requestNewToken" then
     request = args[1]
     refreshHousehold = args[2]
-    print("Request " .. request)
+    fibaro:debug("Request " .. request)
     getToken(refreshHousehold)
 elseif args ~= nil and args[1] == "controlSlide" then
     request = args[1]
     slideToCommand = args[2]
     slideCommand = args[3]
-    print("Request " .. request)
+    fibaro:debug("Request " .. request)
     debuglogger("slideToCommand " .. slideToCommand)
     debuglogger("slideCommand " .. slideCommand)
     -- Check for existence of a token to be able to make calls
-    if (decodedGlobal.access_token ~= "" and os.date("%Y-%m-%d %X") < decodedGlobal.expires_at) then
+    if (decodedGlobalToken.access_token ~= "" and os.date("%Y-%m-%d %X") < decodedGlobalToken.expires_at) then
         setSlide(slideToCommand, slideCommand)
-        print("Token found and not expired, expiry date: " .. authData.expires_at)
+        fibaro:debug("Token found and not expired, expiry date: " .. authData.expires_at)
     else
-        print("No valid token found (not present or expired), triggering function to retrieve a new token")
-        print("The action you've intended to execute might have failed, please try again after token refresh")
+        fibaro:debug("No valid token found (not present or expired), triggering function to retrieve a new token")
+        fibaro:debug("The action you've intended to execute might have failed, please try again after token refresh")
+        refreshHousehold = true
+        getToken(refreshHousehold)
+    end
+elseif args ~= nil and args[1] == "refreshHousehold" then
+    request = args[1]
+    print("Request " .. request)
+    -- Check for existence of a token to be able to make calls
+    if (decodedGlobalToken.access_token ~= "" and os.date("%Y-%m-%d %X") < decodedGlobalToken.expires_at) then
+        getHouseholdInfo()
+    else
+        fibaro:debug(
+            "No valid token found (not present or expired), triggering function to retrieve a new token and refresh household"
+        )
         refreshHousehold = true
         getToken(refreshHousehold)
     end
 else
-    print("Unknown error occurred, please check config syntax")
+    fibaro:debug("Unknown error occurred, please check configuration syntax and virtual device configuration")
 end
-
