@@ -20,7 +20,7 @@ ToDo
 --]]
 --set environment variables that can be used to switch logger on/off.
 debug = true
-dryrun = true
+dryrun = false
 testIndividualSlide = false
 slideIdToTest = 1867
 slideCommandToTest = "close"
@@ -118,7 +118,6 @@ function getToken(refreshHousehold)
                 -- set a small timer to ensure the data is properly stored and propagated
                 if dryrun == false then
                     fibaro:setGlobal("Slidetoken", json.encode(authData))
-                    fibaro:sleep(500)
                 else
                     debuglogger("Performing dry-run, not storing tokens")
                 end
@@ -133,6 +132,7 @@ function getToken(refreshHousehold)
                 -- SLIDES will be provisioned in the virtual device so set that up first
                 if refreshHousehold then
                     debuglogger("Refresh of household triggered")
+                    fibaro:sleep(1000)
                     getHouseholdInfo()
                 else
                     debuglogger("Not refreshing household")
@@ -150,8 +150,9 @@ end
 if dryrun then
     fibaro:debug("Not requesting global variable due to dryrun")
     decodedGlobalToken = authData
-elseif dryrun == false and fibaro:getGlobalValue("Slidetoken") ~= nil then
-    decodedGlobalToken = json.decode(fibaro:getGlobalValue("Slidetoken"))
+elseif dryrun == false and fibaro:getGlobalValue("Slidetoken") ~= nil and fibaro:getGlobalValue("Slidetoken") ~= "0" then
+    retrieveToken = fibaro:getGlobalValue("Slidetoken")
+    decodedGlobalToken = json.decode(retrieveToken)
 else
     fibaro:debug("Warning, no global value set yet for Slidetoken")
 end
@@ -161,13 +162,15 @@ in other API's. The data is store in a global variable. The auth data is used he
 this will improve latency and prevent race conditions.
       --]]
 function getHouseholdInfo()
+    retrieveToken = fibaro:getGlobalValue("Slidetoken")
+    decodedGlobalTokenForHousehold = json.decode(retrieveToken)
     debuglogger("Calling householdinfo for household parameters")
     local selfhttp = net.HTTPClient()
     local endPoint = "/slides/overview"
     local headers = {
         ["content-type"] = "application/json",
         ["X-Requested-With"] = "XMLHttpRequest",
-        ["Authorization"] = "Bearer " .. decodedGlobalToken.access_token
+        ["Authorization"] = "Bearer " .. decodedGlobalTokenForHousehold.access_token
     }
     local url = slideApiUrl .. endPoint
     debuglogger(url)
@@ -216,7 +219,7 @@ function getHouseholdInfo()
                 end
 
                 --[[ list the amount of slides in the house and list the individual slides --]]
-                debuglogger("Number of slides in household: " .. numberOfSlides)
+                debuglogger("Number of slides in household: " .. slides["slidesInHousehold"])
                 for slideData, value in pairs(slides) do
                     debuglogger("Data to be stored in memory: " .. slideData)
                     debuglogger(value)

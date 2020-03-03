@@ -29,7 +29,7 @@ When the userdata has been set and you want to  get going, head over to devices 
 The following variables needs to be created to comply to the scene's storing syntax:
 - Slidetoken
 - Slides
-- Slidesceneid
+- Slidescene
 
 The variables will hold your slide's information and filled by the Fibaro skill, if you're curious what the data that is in there contains head over to the Scene's Lua code so you can see what's  in there (and which other features are possible).
 
