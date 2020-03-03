@@ -83,8 +83,8 @@ function getToken(refreshHousehold)
     debuglogger("Calling getToken function for access")
     -- setup variables to include in the call - include json encoding
     local requestStr = {email = userName, password = password}
-    local requestTringToJSON = json.encode(requestStr)
-    debuglogger("RequestStr:" .. requestTringToJSON)
+    local requestStringToJSON = json.encode(requestStr)
+    debuglogger("RequestStr:" .. requestStringToJSON)
     local selfhttp = net.HTTPClient()
     local endPoint = "/auth/login"
     local headers = {
@@ -100,7 +100,7 @@ function getToken(refreshHousehold)
             options = {
                 headers = headers,
                 method = "POST",
-                data = requestTringToJSON
+                data = requestStringToJSON
             },
             success = function(resp)
                 -- Check for response coming from API
@@ -249,8 +249,8 @@ function setSlide(slideId, command)
         requestStr = {pos = command}
     end
 
-    local requestTringToJSON = json.encode(requestStr)
-    debuglogger("Request send to slide is: " .. requestTringToJSON)
+    local requestStringToJSON = json.encode(requestStr)
+    debuglogger("Request send to slide is: " .. requestStringToJSON)
     local headers = {
         ["content-type"] = "application/json",
         ["X-Requested-With"] = "XMLHttpRequest",
@@ -264,7 +264,7 @@ function setSlide(slideId, command)
             options = {
                 headers = headers,
                 method = "POST",
-                data = requestTringToJSON
+                data = requestStringToJSON
             },
             success = function(resp)
                 debuglogger("Response on set slide call: " .. resp.data)
