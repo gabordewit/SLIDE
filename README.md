@@ -49,24 +49,48 @@ When you've done this and have set a dryrun, you can start the dryrun by running
 Create a global variable:
 - Slidetoken
 - Slides
-- Slidesceneid
+- Slidescene
 
-Take the following steps to get you going:
-- insert the scene id of the slide api into the variable Slidescene in the fibaro panel section;
-- import vfib in the virtual device section
+Common steps to take to get started:
+- set the dryrun in the scene to false (see above) to ensure the scene actually stores information in global variables
+- insert the scene id of the slide api into the variable 'Slidescene' in the fibaro panel section;
+
+Option 1 - Creating a household based virtual device for all slides
+- import vfib with the name All_slides.vfib in the virtual device section
 - adjust the amount of slides in the virtual device to the amount you actually have connected and registered to the cloud api of slide
-- set the dryrun (see above) to false to ensure the scene actually stores information in global variables
+- Insert the artwork for the individual states of the slide
 - start initialization of the virtual device by pressing the associated button name
-- wait for 5 seconds (the roundabout time of the login and household call) for the virtual device fields to be filled.
+- wait for 5 seconds (the roundabout time of the login and household call) for the virtual device fields to be filled and the sliders to be filled with the status of the individual slide.
 
 This means you can  import the VFIB and adjust the amount of slides to the slides you have in your house. If you have three devices associated to your home, create three slide labels + open/close buttons. As the example includes two slides validate the syntax they are using to see if you can simply copy one example to the new device (typically this would be a yes). In general the initialization button will loop through all of the slides the SLIDE API will return and create associated labels in the virtual devices so you can actually recognize your slides by their respective friendly names. The global variable in which the Slidescene is referred to will ensure the right api's are called.
 
-**Set the dryrun to false in the scene to ensure that the initialization can take place**
+Option 2 - creating individual slides
+- import vfib with the name Single_slide.vfib in the virtual device section
+- for the first device you import keep the code of the labels as is
+- for the subsequent devices it's important to validate and change the syntax:
+```
+-- On the On / OFF / Slider buttons  change:
+-- use the label value to get the technical id
+slideToCommand = decodedInfo["slide1"]["id"] -- increment this slidenumber with every slide
+
+```
+```
+-- On the initialize and main loop change:
+-- list slidenumber here
+slideToCheck = 'slide1' -- increment this slidenumber with every slide
+
+```
+- Insert the artwork for the individual states of the slide
+- You can try to initialize a single slide to see if it works, if you have more slides than the subsequent virtual devices should be straightforward to add. 
+- wait for 5 seconds (the roundabout time of the login and household call) for the virtual device fields to be filled and the sliders to be filled with the status of the individual slide.
+
+The individual slide option is a little bit more work as you need to adapt N amount of devices (e.g. if you have three slides you need to adopt and adapt three virtual devices).
 
 ## Backlog
 To simplify the use of the scene/api, this code is under development to include some more features that will follow:
+- Simplify individual devices
+- Update the slider within the virtual device more frequently
 - Automate the generation of global variables by the scene itself;
-- improve default virtual device to include state of the device (open/close)
 - validate if holiday mode is on/off
 - Make a UI for the routines already available on the devices.
 - Automate the generation of a virtual device (if Fibaro allows this )
