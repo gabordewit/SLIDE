@@ -16,7 +16,7 @@ The basic features supported are:
 - use a slider to set custom values for open and close (e.g. partially open)
 
 ## Instructions
-To get your Fibaro skill up and running head over to the scene section and create yourself  a new scene. Name your scene and use a notepad to list the scene ID. Copy past the code that is listed under slide_scene.lua in the advanced section. Next head over to the parts of the code that you need to adjust to suit your situation and your credentials.:
+To get your Fibaro skill up and running head over to the scene section and create yourself  a new scene. Name your scene and use a notepad to list the scene ID. Next head over to the parts of the code that you need to adjust to suit your situation and your credentials.:
 
 ```
 -- set userdata for SLIDE api including URL.
@@ -24,7 +24,7 @@ userName = "INSERT YOUR OWN EMAIL HERE - YES THE QUOTES NEED TO STAY BEFORE AND 
 password = "INSERT YOUR OWN PASSWORD HERE - YES THE QUOTES NEED TO STAY BEFORE AND AFTER"
 slideApiUrl = "https://api.goslide.io/api"
 ```
-When the userdata has been set and you want to  get going, head over to devices and import the example VFIB file to get the basics behind the way in which the virtual device calls the scene and how the device itself is dynamically provisioned. For this to work it's important to do a dry run on the scene (instructions below) and to create four global variables in the panel section of Fibaro. Just create blank ones for the first three - they will be filled by the scene- but insert the scene id for the newly create code in the variable for slidescene.
+When the userdata has been set and you want to  get going, head over to devices and import the example VFIB file to get the basics behind the way in which the virtual device calls the scene and how the device itself is dynamically provisioned. For this to work it's important to do a dry run on the scene (instructions below) and to create three global variables in the panel section of Fibaro. Just create blank ones for the first two - they will be filled by the scene- but insert the scene id for the newly create code in the variable for slidescene. So create scene, remember scene id, and then insert that scene id in the value when creating a global variable called Slidescene
 
 The following variables needs to be created to comply to the scene's storing syntax:
 - Slidetoken
