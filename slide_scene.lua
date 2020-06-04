@@ -151,6 +151,7 @@ if dryrun then
     fibaro:debug("Not requesting global variable due to dryrun")
     decodedGlobalToken = authData
 elseif dryrun == false and fibaro:getGlobalValue("Slidetoken") ~= nil and fibaro:getGlobalValue("Slidetoken") ~= "0" then
+    fibaro:debug("Requesting global variable to run authentication")
     retrieveToken = fibaro:getGlobalValue("Slidetoken")
     decodedGlobalToken = json.decode(retrieveToken)
 else
@@ -158,19 +159,19 @@ else
 end
 
 --[[ This is one of the most important API's, as this API will allow you to set the technical id's of the  slides to use
-in other API's. The data is store in a global variable. The auth data is used here instead of the global value since 
-this will improve latency and prevent race conditions.
+in other API's. The data is store in a global variable. The data  used here is dependent on the values of the block above:
+if dryrun is true it uses local variables from getToken, otherwise it retrieves data from global variables.
       --]]
 function getHouseholdInfo()
-    retrieveToken = fibaro:getGlobalValue("Slidetoken")
-    decodedGlobalTokenForHousehold = json.decode(retrieveToken)
+    -- retrieveToken = fibaro:getGlobalValue("Slidetoken")
+    -- decodedGlobalTokenForHousehold = json.decode(retrieveToken)
     debuglogger("Calling householdinfo for household parameters")
     local selfhttp = net.HTTPClient()
     local endPoint = "/slides/overview"
     local headers = {
         ["content-type"] = "application/json",
         ["X-Requested-With"] = "XMLHttpRequest",
-        ["Authorization"] = "Bearer " .. decodedGlobalTokenForHousehold.access_token
+        ["Authorization"] = "Bearer " .. decodedGlobalToken.access_token
     }
     local url = slideApiUrl .. endPoint
     debuglogger(url)
