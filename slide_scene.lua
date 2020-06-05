@@ -166,7 +166,7 @@ function getHouseholdInfo()
   if dryrun then
     decodedGlobalToken = authData
     else 
-    retrieveToken = fibaro:getGlobalValue("Slidetoken2")
+    retrieveToken = fibaro:getGlobalValue("Slidetoken")
     decodedGlobalToken = json.decode(retrieveToken)
     end
     debuglogger("Calling householdinfo for household parameters")
