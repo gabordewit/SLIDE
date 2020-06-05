@@ -163,8 +163,12 @@ in other API's. The data is store in a global variable. The data  used here is d
 if dryrun is true it uses local variables from getToken, otherwise it retrieves data from global variables.
       --]]
 function getHouseholdInfo()
-    -- retrieveToken = fibaro:getGlobalValue("Slidetoken")
-    -- decodedGlobalTokenForHousehold = json.decode(retrieveToken)
+  if dryrun then
+    decodedGlobalToken = authData
+    else 
+    retrieveToken = fibaro:getGlobalValue("Slidetoken2")
+    decodedGlobalToken = json.decode(retrieveToken)
+    end
     debuglogger("Calling householdinfo for household parameters")
     local selfhttp = net.HTTPClient()
     local endPoint = "/slides/overview"
