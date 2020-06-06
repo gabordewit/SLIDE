@@ -12,6 +12,7 @@ Github referece: https://github.com/gabordewit/SLIDE
 Versions
 1.0 Initial release
 1.0.1 Improved datamodel to limit amount global variables
+1.0.2 Fix crashes during dry-run, simplified single slide creation in virtual device.
 
 ToDo
 - request realtime status of current slide to be reflected in Virtual device
