@@ -70,8 +70,8 @@ Option 2 - creating individual slides
 - for the subsequent devices it's important to validate and change the syntax:
 ```
 -- On the On / OFF / Slider buttons  change:
--- use the label value to get the technical id
-slideToCommand = decodedInfo["slide1"]["id"] -- increment this slidenumber with every slide
+-- list slidenumber here
+slideToCheck = 'slide1' -- increment this slidenumber with every slide
 
 ```
 ```
