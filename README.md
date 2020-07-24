@@ -15,7 +15,7 @@ The basic features supported are:
 - opening/closing your slide
 - use a slider to set custom values for open and close (e.g. partially open)
 
-## Instructions
+## Quick Instructions (see more detailed step by step approach below)
 To get your Fibaro skill up and running head over to the scene section and create yourself  a new scene. Name your scene and use a notepad to list the scene ID. Next head over to the parts of the code that you need to adjust to suit your situation and your credentials.:
 
 ```
@@ -51,7 +51,7 @@ Create a global variable:
 - Slides
 - Slidescene
 
-Common steps to take to get started:
+Common steps to take to get started (see detailed step by step further down below):
 - set the dryrun in the scene to false (see above) to ensure the scene actually stores information in global variables
 - insert the scene id of the slide api into the variable 'Slidescene' in the fibaro panel section;
 
@@ -86,9 +86,41 @@ slideToCheck = 'slide1' -- increment this slidenumber with every slide
 
 The individual slide option is a little bit more work as you need to adapt N amount of devices (e.g. if you have three slides you need to adopt and adapt three virtual devices).
 
+## Detailed Step by step instructions (Thank you Frank)
+1.	Download all files as .zip by pressing on the “clone or download” button and extract them
+2.	Make a new scene in Fibaro, the actions in it do not matter. This can be done with graphical blocks if you prefer. Write down the id (can be found in the “general” tab).
+3.	Go to the “advanced” tab and switch to lua. 
+4.	Copy all the code from slide_scene.lua to the area below “advanced”. Overwrite existing code if it is there
+5.	Fill in your Slide emailadress and password in line 39 and 40 in the lua-code
+6.	Go to “Panels” and click on “variables”
+7.	Click on “add variable” and enter “Slidetoken”. Leave the value at 0.
+8.	Do the same for “Slides”.
+9.	Do the same for “Slidescene” but enter here as value the nr you wrote down as scene id at step 2.
+10.	Go to back to the scene and adjust the code in line 27-30 as mentioned below. Press save.
+11.	You are now going to execute a dryrun. This will deliver you with id(‘s) of the Slide(s) in your household. Press “start”.
+12.	In the area below the start button white text will appear. All the way to the bottom you will find your Slide id(s), after the text ID found xxxx. 
+13.	Now it is time to test if everything works ok. Make sure your Slide is open. Take one of the id’s and enter it in line 29. Change the command in line 28 (testIndividualSlide) to “true”. Save and press start again. The Slide should close now.
+14.	If that is working, change the value of testIndividualSlide back to “false” and also change the value of line 27 dryrun to “false”. Press save.
+15.	Make sure the scene is “on”.
+16.	Go to the Devices tab and click on “add device”. 
+17.	In the section “Add virtual device”, click on import file and import the file “single_slide.vfib”.
+18.	Fibaro directly should recognize your Slide.
+19.	If you want to add more than one Slide, follow the same procedure. However, after importing go the tab “advanced”. Under Label enter the value to Slide 2. (and 3 if you want to add another Slide after this one, and so on) 
+20.	In the code under “button”, change slideToCheck = 'slide1'  to slideToCheck = 'slide2'  (and 3 if you want to add another Slide after this one, and so on) 
+21.	Do the same at “close” and “curtain rail”
+22.	At “Initialize, change slideToCheck = 'slide1' to slideToCheck = 'slide2' (and 3 if you want to add another Slide after this one, and so on) 
+23.	Do the same at “main loop”.
+24.	Save.
+25.	Now you can add the custom icons, per slide. Go to the advanced tab of one of the Slides and click on “change icon” at the “Open” button.
+26.	Add the icon you want to use by importing it (bottom of the screen). Then click on the icon in the list. Save.
+27.	Do the same for the other buttons.
+28.	In case you have more than 2 slides and plan to invoke them from Fibaro at the same time (e.g. multiple virtual devices trying to trigger the scene at the same tiime), please read on.
+29. To be able to have more than 2 Slides running from Fibaro at the same time go to "General" in the scene.
+30. Set the "Max. running instances:" to the amount of Slides you want to run at the same time.
+31. Press "Save" and you're all set.
+
 ## Backlog
 To simplify the use of the scene/api, this code is under development to include some more features that will follow:
-- Simplify individual devices
 - Update the slider within the virtual device more frequently
 - Automate the generation of global variables by the scene itself;
 - validate if holiday mode is on/off
