@@ -16,6 +16,7 @@ Versions
 1.0.2 Fix crashes during dry-run, simplified single slide creation in virtual device.
 1.0.3 Improved global variable handling and error handling, improved instructions, additional icons.
 1.0.4 Introduced handling on api status codes, improved logger for less-verbose mode.
+1.0.5 Introduced local API management leveraging local network capabilities to reach SLIDE.
 
 ToDo
 - request realtime status of current slide to be reflected in Virtual device
